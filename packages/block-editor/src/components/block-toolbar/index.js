@@ -111,9 +111,7 @@ export default function BlockToolbar( {
 					</div>
 				) }
 				{ ( shouldShowVisualToolbar || isMultiToolbar ) && (
-					<div className="block-editor-block-toolbar__block-switcher-wrapper">
-						<BlockSwitcher clientIds={ blockClientIds } />
-					</div>
+					<BlockSwitcher clientIds={ blockClientIds } />
 				) }
 			</div>
 			{ ( shouldShowVisualToolbar || isMultiToolbar ) && (

@@ -104,17 +104,14 @@ export default function BlockToolbar( {
 
 	return (
 		<Wrapper className={ classes }>
-			<div ref={ nodeRef }>
+			<div ref={ nodeRef } { ...showMoversGestures }>
 				{ ! isMultiToolbar && (
 					<div className="block-editor-block-toolbar__block-parent-selector-wrapper">
 						<BlockParentSelector clientIds={ blockClientIds } />
 					</div>
 				) }
 				{ ( shouldShowVisualToolbar || isMultiToolbar ) && (
-					<div
-						{ ...showMoversGestures }
-						className="block-editor-block-toolbar__block-switcher-wrapper"
-					>
+					<div className="block-editor-block-toolbar__block-switcher-wrapper">
 						<BlockSwitcher clientIds={ blockClientIds } />
 					</div>
 				) }

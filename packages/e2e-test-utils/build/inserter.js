@@ -1,0 +1,447 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.openGlobalBlockInserter = openGlobalBlockInserter;
+exports.closeGlobalBlockInserter = closeGlobalBlockInserter;
+exports.searchForBlock = searchForBlock;
+exports.searchForPattern = searchForPattern;
+exports.searchForReusableBlock = searchForReusableBlock;
+exports.insertBlock = insertBlock;
+exports.insertPattern = insertPattern;
+exports.insertReusableBlock = insertReusableBlock;
+
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
+
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+
+var _pressKeyWithModifier = require("./press-key-with-modifier");
+
+/**
+ * Internal dependencies
+ */
+// This selector is written to support the current and old inserter markup
+// because the performance tests need to be able to run across versions.
+var INSERTER_SEARCH_SELECTOR = '.block-editor-inserter__search-input,input.block-editor-inserter__search';
+/**
+ * Opens the global block inserter.
+ */
+
+function openGlobalBlockInserter() {
+  return _openGlobalBlockInserter.apply(this, arguments);
+}
+
+function _openGlobalBlockInserter() {
+  _openGlobalBlockInserter = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee() {
+    var tab;
+    return _regenerator.default.wrap(function _callee$(_context) {
+      while (1) {
+        switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return isGlobalInserterOpen();
+
+          case 2:
+            if (!_context.sent) {
+              _context.next = 11;
+              break;
+            }
+
+            _context.next = 5;
+            return page.$('.block-editor-inserter__tabs .components-tab-panel__tabs-item:nth-of-type(1):not(.is-active)');
+
+          case 5:
+            tab = _context.sent;
+
+            if (!tab) {
+              _context.next = 9;
+              break;
+            }
+
+            _context.next = 9;
+            return tab.click();
+
+          case 9:
+            _context.next = 15;
+            break;
+
+          case 11:
+            _context.next = 13;
+            return toggleGlobalBlockInserter();
+
+          case 13:
+            _context.next = 15;
+            return page.waitForSelector('.block-editor-inserter__menu');
+
+          case 15:
+          case "end":
+            return _context.stop();
+        }
+      }
+    }, _callee);
+  }));
+  return _openGlobalBlockInserter.apply(this, arguments);
+}
+
+function closeGlobalBlockInserter() {
+  return _closeGlobalBlockInserter.apply(this, arguments);
+}
+
+function _closeGlobalBlockInserter() {
+  _closeGlobalBlockInserter = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee2() {
+    return _regenerator.default.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            _context2.next = 2;
+            return isGlobalInserterOpen();
+
+          case 2:
+            if (!_context2.sent) {
+              _context2.next = 5;
+              break;
+            }
+
+            _context2.next = 5;
+            return toggleGlobalBlockInserter();
+
+          case 5:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+  return _closeGlobalBlockInserter.apply(this, arguments);
+}
+
+function isGlobalInserterOpen() {
+  return _isGlobalInserterOpen.apply(this, arguments);
+}
+
+function _isGlobalInserterOpen() {
+  _isGlobalInserterOpen = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3() {
+    return _regenerator.default.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.next = 2;
+            return page.evaluate(function () {
+              return !!document.querySelector('.edit-post-header [aria-label="Add block"].is-pressed, .edit-site-header [aria-label="Add block"].is-pressed');
+            });
+
+          case 2:
+            return _context3.abrupt("return", _context3.sent);
+
+          case 3:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3);
+  }));
+  return _isGlobalInserterOpen.apply(this, arguments);
+}
+
+function toggleGlobalBlockInserter() {
+  return _toggleGlobalBlockInserter.apply(this, arguments);
+}
+/**
+ * Search for block in the global inserter
+ *
+ * @param {string} searchTerm The text to search the inserter for.
+ */
+
+
+function _toggleGlobalBlockInserter() {
+  _toggleGlobalBlockInserter = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4() {
+    return _regenerator.default.wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            _context4.next = 2;
+            return page.click('.edit-post-header [aria-label="Add block"], .edit-site-header [aria-label="Add block"]');
+
+          case 2:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4);
+  }));
+  return _toggleGlobalBlockInserter.apply(this, arguments);
+}
+
+function searchForBlock(_x) {
+  return _searchForBlock.apply(this, arguments);
+}
+/**
+ * Search for pattern in the global inserter
+ *
+ * @param {string} searchTerm The text to search the inserter for.
+ */
+
+
+function _searchForBlock() {
+  _searchForBlock = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee5(searchTerm) {
+    return _regenerator.default.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            _context5.next = 2;
+            return openGlobalBlockInserter();
+
+          case 2:
+            _context5.next = 4;
+            return page.focus(INSERTER_SEARCH_SELECTOR);
+
+          case 4:
+            _context5.next = 6;
+            return (0, _pressKeyWithModifier.pressKeyWithModifier)('primary', 'a');
+
+          case 6:
+            _context5.next = 8;
+            return page.keyboard.type(searchTerm);
+
+          case 8:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5);
+  }));
+  return _searchForBlock.apply(this, arguments);
+}
+
+function searchForPattern(_x2) {
+  return _searchForPattern.apply(this, arguments);
+}
+/**
+ * Search for reusable block in the global inserter.
+ *
+ * @param {string} searchTerm The text to search the inserter for.
+ */
+
+
+function _searchForPattern() {
+  _searchForPattern = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee6(searchTerm) {
+    var _yield$page$$x, _yield$page$$x2, tab;
+
+    return _regenerator.default.wrap(function _callee6$(_context6) {
+      while (1) {
+        switch (_context6.prev = _context6.next) {
+          case 0:
+            _context6.next = 2;
+            return openGlobalBlockInserter();
+
+          case 2:
+            _context6.next = 4;
+            return page.$x('//div[contains(@class, "block-editor-inserter__tabs")]//button[.="Patterns"]');
+
+          case 4:
+            _yield$page$$x = _context6.sent;
+            _yield$page$$x2 = (0, _slicedToArray2.default)(_yield$page$$x, 1);
+            tab = _yield$page$$x2[0];
+            _context6.next = 9;
+            return tab.click();
+
+          case 9:
+            _context6.next = 11;
+            return page.focus(INSERTER_SEARCH_SELECTOR);
+
+          case 11:
+            _context6.next = 13;
+            return (0, _pressKeyWithModifier.pressKeyWithModifier)('primary', 'a');
+
+          case 13:
+            _context6.next = 15;
+            return page.keyboard.type(searchTerm);
+
+          case 15:
+          case "end":
+            return _context6.stop();
+        }
+      }
+    }, _callee6);
+  }));
+  return _searchForPattern.apply(this, arguments);
+}
+
+function searchForReusableBlock(_x3) {
+  return _searchForReusableBlock.apply(this, arguments);
+}
+/**
+ * Opens the inserter, searches for the given term, then selects the first
+ * result that appears. It then waits briefly for the block list to update.
+ *
+ * @param {string} searchTerm The text to search the inserter for.
+ */
+
+
+function _searchForReusableBlock() {
+  _searchForReusableBlock = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee7(searchTerm) {
+    var _yield$page$$x3, _yield$page$$x4, tab;
+
+    return _regenerator.default.wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            _context7.next = 2;
+            return openGlobalBlockInserter();
+
+          case 2:
+            _context7.next = 4;
+            return page.waitForXPath('//div[contains(@class, "block-editor-inserter__tabs")]//button[text()="Reusable"]');
+
+          case 4:
+            _context7.next = 6;
+            return page.$x('//div[contains(@class, "block-editor-inserter__tabs")]//button[text()="Reusable"]');
+
+          case 6:
+            _yield$page$$x3 = _context7.sent;
+            _yield$page$$x4 = (0, _slicedToArray2.default)(_yield$page$$x3, 1);
+            tab = _yield$page$$x4[0];
+            _context7.next = 11;
+            return tab.click();
+
+          case 11:
+            _context7.next = 13;
+            return page.focus(INSERTER_SEARCH_SELECTOR);
+
+          case 13:
+            _context7.next = 15;
+            return (0, _pressKeyWithModifier.pressKeyWithModifier)('primary', 'a');
+
+          case 15:
+            _context7.next = 17;
+            return page.keyboard.type(searchTerm);
+
+          case 17:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7);
+  }));
+  return _searchForReusableBlock.apply(this, arguments);
+}
+
+function insertBlock(_x4) {
+  return _insertBlock.apply(this, arguments);
+}
+/**
+ * Opens the inserter, searches for the given pattern, then selects the first
+ * result that appears. It then waits briefly for the block list to update.
+ *
+ * @param {string} searchTerm The text to search the inserter for.
+ */
+
+
+function _insertBlock() {
+  _insertBlock = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee8(searchTerm) {
+    var insertButton;
+    return _regenerator.default.wrap(function _callee8$(_context8) {
+      while (1) {
+        switch (_context8.prev = _context8.next) {
+          case 0:
+            _context8.next = 2;
+            return searchForBlock(searchTerm);
+
+          case 2:
+            _context8.next = 4;
+            return page.$x("//button//span[contains(text(), '".concat(searchTerm, "')]"));
+
+          case 4:
+            insertButton = _context8.sent[0];
+            _context8.next = 7;
+            return insertButton.click();
+
+          case 7:
+          case "end":
+            return _context8.stop();
+        }
+      }
+    }, _callee8);
+  }));
+  return _insertBlock.apply(this, arguments);
+}
+
+function insertPattern(_x5) {
+  return _insertPattern.apply(this, arguments);
+}
+/**
+ * Opens the inserter, searches for the given reusable block, then selects the
+ * first result that appears. It then waits briefly for the block list to
+ * update.
+ *
+ * @param {string} searchTerm The text to search the inserter for.
+ */
+
+
+function _insertPattern() {
+  _insertPattern = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee9(searchTerm) {
+    var insertButton;
+    return _regenerator.default.wrap(function _callee9$(_context9) {
+      while (1) {
+        switch (_context9.prev = _context9.next) {
+          case 0:
+            _context9.next = 2;
+            return searchForPattern(searchTerm);
+
+          case 2:
+            _context9.next = 4;
+            return page.$x("//div[@role = 'button']//div[contains(text(), '".concat(searchTerm, "')]"));
+
+          case 4:
+            insertButton = _context9.sent[0];
+            _context9.next = 7;
+            return insertButton.click();
+
+          case 7:
+          case "end":
+            return _context9.stop();
+        }
+      }
+    }, _callee9);
+  }));
+  return _insertPattern.apply(this, arguments);
+}
+
+function insertReusableBlock(_x6) {
+  return _insertReusableBlock.apply(this, arguments);
+}
+
+function _insertReusableBlock() {
+  _insertReusableBlock = (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee10(searchTerm) {
+    var insertButton;
+    return _regenerator.default.wrap(function _callee10$(_context10) {
+      while (1) {
+        switch (_context10.prev = _context10.next) {
+          case 0:
+            _context10.next = 2;
+            return searchForReusableBlock(searchTerm);
+
+          case 2:
+            _context10.next = 4;
+            return page.$x("//button//span[contains(text(), '".concat(searchTerm, "')]"));
+
+          case 4:
+            insertButton = _context10.sent[0];
+            _context10.next = 7;
+            return insertButton.click();
+
+          case 7:
+          case "end":
+            return _context10.stop();
+        }
+      }
+    }, _callee10);
+  }));
+  return _insertReusableBlock.apply(this, arguments);
+}
+//# sourceMappingURL=inserter.js.map

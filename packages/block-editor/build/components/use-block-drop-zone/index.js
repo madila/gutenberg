@@ -1,0 +1,278 @@
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getNearestBlockIndex = getNearestBlockIndex;
+exports.default = useBlockDropZone;
+
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
+
+var _components = require("@wordpress/components");
+
+var _blocks = require("@wordpress/blocks");
+
+var _data = require("@wordpress/data");
+
+var _element = require("@wordpress/element");
+
+/**
+ * WordPress dependencies
+ */
+
+/** @typedef {import('@wordpress/element').WPSyntheticEvent} WPSyntheticEvent */
+
+/**
+ * @typedef  {Object} WPBlockDragPosition
+ * @property {number} x The horizontal position of a the block being dragged.
+ * @property {number} y The vertical position of the block being dragged.
+ */
+
+/**
+ * The orientation of a block list.
+ *
+ * @typedef {'horizontal'|'vertical'|undefined} WPBlockListOrientation
+ */
+
+/**
+ * Given a list of block DOM elements finds the index that a block should be dropped
+ * at.
+ *
+ * This function works for both horizontal and vertical block lists and uses the following
+ * terms for its variables:
+ *
+ * - Lateral, meaning the axis running horizontally when a block list is vertical and vertically when a block list is horizontal.
+ * - Forward, meaning the axis running vertically when a block list is vertical and horizontally
+ * when a block list is horizontal.
+ *
+ *
+ * @param {Element[]}              elements    Array of DOM elements that represent each block in a block list.
+ * @param {WPBlockDragPosition}    position    The position of the item being dragged.
+ * @param {WPBlockListOrientation} orientation The orientation of a block list.
+ *
+ * @return {number|undefined} The block index that's closest to the drag position.
+ */
+function getNearestBlockIndex(elements, position, orientation) {
+  var x = position.x,
+      y = position.y;
+  var isHorizontal = orientation === 'horizontal';
+  var candidateIndex;
+  var candidateDistance;
+  elements.forEach(function (element, index) {
+    // Ensure the element is a block. It should have the `wp-block` class.
+    if (!element.classList.contains('wp-block')) {
+      return;
+    }
+
+    var rect = element.getBoundingClientRect();
+    var cursorLateralPosition = isHorizontal ? y : x;
+    var cursorForwardPosition = isHorizontal ? x : y;
+    var edgeLateralStart = isHorizontal ? rect.top : rect.left;
+    var edgeLateralEnd = isHorizontal ? rect.bottom : rect.right; // When the cursor position is within the lateral bounds of the block,
+    // measure the straight line distance to the nearest point on the
+    // block's edge, else measure diagonal distance to the nearest corner.
+
+    var edgeLateralPosition;
+
+    if (cursorLateralPosition >= edgeLateralStart && cursorLateralPosition <= edgeLateralEnd) {
+      edgeLateralPosition = cursorLateralPosition;
+    } else if (cursorLateralPosition < edgeLateralStart) {
+      edgeLateralPosition = edgeLateralStart;
+    } else {
+      edgeLateralPosition = edgeLateralEnd;
+    }
+
+    var leadingEdgeForwardPosition = isHorizontal ? rect.left : rect.top;
+    var trailingEdgeForwardPosition = isHorizontal ? rect.right : rect.bottom; // First measure the distance to the leading edge of the block.
+
+    var leadingEdgeDistance = Math.sqrt(Math.pow(cursorLateralPosition - edgeLateralPosition, 2) + Math.pow(cursorForwardPosition - leadingEdgeForwardPosition, 2)); // If no candidate has been assigned yet or this is the nearest
+    // block edge to the cursor, then assign it as the candidate.
+
+    if (candidateDistance === undefined || Math.abs(leadingEdgeDistance) < candidateDistance) {
+      candidateDistance = leadingEdgeDistance;
+      candidateIndex = index;
+    } // Next measure the distance to the trailing edge of the block.
+
+
+    var trailingEdgeDistance = Math.sqrt(Math.pow(cursorLateralPosition - edgeLateralPosition, 2) + Math.pow(cursorForwardPosition - trailingEdgeForwardPosition, 2)); // If no candidate has been assigned yet or this is the nearest
+    // block edge to the cursor, then assign the next block as the candidate.
+
+    if (Math.abs(trailingEdgeDistance) < candidateDistance) {
+      candidateDistance = trailingEdgeDistance;
+      var nextBlockOffset = 1; // If the next block is the one being dragged, skip it and consider
+      // the block afterwards the drop target. This is needed as the
+      // block being dragged is set to display: none and won't display
+      // any drop target styling.
+
+      if (elements[index + 1] && elements[index + 1].classList.contains('is-dragging')) {
+        nextBlockOffset = 2;
+      }
+
+      candidateIndex = index + nextBlockOffset;
+    }
+  });
+  return candidateIndex;
+}
+/**
+ * Retrieve the data for a block drop event.
+ *
+ * @param {WPSyntheticEvent} event The drop event.
+ *
+ * @return {Object} An object with block drag and drop data.
+ */
+
+
+function parseDropEvent(event) {
+  var result = {
+    srcRootClientId: null,
+    srcClientIds: null,
+    type: null
+  };
+
+  if (!event.dataTransfer) {
+    return result;
+  }
+
+  try {
+    result = Object.assign(result, JSON.parse(event.dataTransfer.getData('text')));
+  } catch (err) {
+    return result;
+  }
+
+  return result;
+}
+/**
+ * @typedef  {Object} WPBlockDropZoneConfig
+ * @property {Object} element      A React ref object pointing to the block list's DOM element.
+ * @property {string} rootClientId The root client id for the block list.
+ */
+
+/**
+ * A React hook that can be used to make a block list handle drag and drop.
+ *
+ * @param {WPBlockDropZoneConfig} dropZoneConfig configuration data for the drop zone.
+ *
+ * @return {number|undefined} The block index that's closest to the drag position.
+ */
+
+
+function useBlockDropZone(_ref) {
+  var element = _ref.element,
+      targetRootClientId = _ref.rootClientId;
+
+  var _useState = (0, _element.useState)(null),
+      _useState2 = (0, _slicedToArray2.default)(_useState, 2),
+      targetBlockIndex = _useState2[0],
+      setTargetBlockIndex = _useState2[1];
+
+  var _useSelect = (0, _data.useSelect)(function (select) {
+    var _getBlockListSettings;
+
+    var _select = select('core/block-editor'),
+        getBlockListSettings = _select.getBlockListSettings,
+        _getClientIdsOfDescendants = _select.getClientIdsOfDescendants,
+        _getBlockIndex = _select.getBlockIndex,
+        getSettings = _select.getSettings,
+        getTemplateLock = _select.getTemplateLock;
+
+    return {
+      orientation: (_getBlockListSettings = getBlockListSettings(targetRootClientId)) === null || _getBlockListSettings === void 0 ? void 0 : _getBlockListSettings.orientation,
+      getClientIdsOfDescendants: _getClientIdsOfDescendants,
+      getBlockIndex: _getBlockIndex,
+      hasUploadPermissions: !!getSettings().mediaUpload,
+      isLockedAll: getTemplateLock(targetRootClientId) === 'all'
+    };
+  }, [targetRootClientId]),
+      getClientIdsOfDescendants = _useSelect.getClientIdsOfDescendants,
+      getBlockIndex = _useSelect.getBlockIndex,
+      hasUploadPermissions = _useSelect.hasUploadPermissions,
+      isLockedAll = _useSelect.isLockedAll,
+      orientation = _useSelect.orientation;
+
+  var _useDispatch = (0, _data.useDispatch)('core/block-editor'),
+      insertBlocks = _useDispatch.insertBlocks,
+      updateBlockAttributes = _useDispatch.updateBlockAttributes,
+      moveBlocksToPosition = _useDispatch.moveBlocksToPosition;
+
+  var onFilesDrop = (0, _element.useCallback)(function (files) {
+    if (!hasUploadPermissions) {
+      return;
+    }
+
+    var transformation = (0, _blocks.findTransform)((0, _blocks.getBlockTransforms)('from'), function (transform) {
+      return transform.type === 'files' && transform.isMatch(files);
+    });
+
+    if (transformation) {
+      var blocks = transformation.transform(files, updateBlockAttributes);
+      insertBlocks(blocks, targetBlockIndex, targetRootClientId);
+    }
+  }, [hasUploadPermissions, updateBlockAttributes, insertBlocks, targetBlockIndex, targetRootClientId]);
+  var onHTMLDrop = (0, _element.useCallback)(function (HTML) {
+    var blocks = (0, _blocks.pasteHandler)({
+      HTML: HTML,
+      mode: 'BLOCKS'
+    });
+
+    if (blocks.length) {
+      insertBlocks(blocks, targetBlockIndex, targetRootClientId);
+    }
+  }, [insertBlocks, targetBlockIndex, targetRootClientId]);
+  var onDrop = (0, _element.useCallback)(function (event) {
+    var _parseDropEvent = parseDropEvent(event),
+        sourceRootClientId = _parseDropEvent.srcRootClientId,
+        sourceClientIds = _parseDropEvent.srcClientIds,
+        dropType = _parseDropEvent.type; // If the user isn't dropping a block, return early.
+
+
+    if (dropType !== 'block') {
+      return;
+    }
+
+    var sourceBlockIndex = getBlockIndex(sourceClientIds[0]); // If the user is dropping to the same position, return early.
+
+    if (sourceRootClientId === targetRootClientId && sourceBlockIndex === targetBlockIndex) {
+      return;
+    } // If the user is attempting to drop a block within its own
+    // nested blocks, return early as this would create infinite
+    // recursion.
+
+
+    if (sourceClientIds.includes(targetRootClientId) || getClientIdsOfDescendants(sourceClientIds).some(function (id) {
+      return id === targetRootClientId;
+    })) {
+      return;
+    }
+
+    var isAtSameLevel = sourceRootClientId === targetRootClientId || sourceRootClientId === '' && targetRootClientId === undefined; // If the block is kept at the same level and moved downwards,
+    // subtract to account for blocks shifting upward to occupy its old position.
+
+    var insertIndex = isAtSameLevel && sourceBlockIndex < targetBlockIndex ? targetBlockIndex - 1 : targetBlockIndex;
+    moveBlocksToPosition(sourceClientIds, sourceRootClientId, targetRootClientId, insertIndex);
+  }, [getClientIdsOfDescendants, getBlockIndex, targetBlockIndex, moveBlocksToPosition, targetRootClientId]);
+
+  var _useDropZone = (0, _components.__unstableUseDropZone)({
+    element: element,
+    onFilesDrop: onFilesDrop,
+    onHTMLDrop: onHTMLDrop,
+    onDrop: onDrop,
+    isDisabled: isLockedAll,
+    withPosition: true
+  }),
+      position = _useDropZone.position;
+
+  (0, _element.useEffect)(function () {
+    if (position) {
+      var blockElements = Array.from(element.current.children);
+      var targetIndex = getNearestBlockIndex(blockElements, position, orientation);
+      setTargetBlockIndex(targetIndex === undefined ? 0 : targetIndex);
+    }
+  }, [position]);
+
+  if (position) {
+    return targetBlockIndex;
+  }
+}
+//# sourceMappingURL=index.js.map

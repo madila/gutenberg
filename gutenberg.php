@@ -8,6 +8,7 @@
  * Version: 8.5.1
  * Author: Gutenberg Team
  * Text Domain: gutenberg
+ * Github Plugin URI: madila/gutenberg
  *
  * @package gutenberg
  */
